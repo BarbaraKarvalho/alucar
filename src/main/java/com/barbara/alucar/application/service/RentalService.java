@@ -50,7 +50,14 @@ public class RentalService {
             .toList();
     }
 
+    private boolean isValidObjectId(String id) {
+        return id != null && id.matches("^[a-fA-F0-9]{24}$");
+    }
+
     public void startRental(RentalStartRequestDto rentalStartRequestDto) {
+        if (!isValidObjectId(rentalStartRequestDto.getCarId())) {
+            throw new IllegalArgumentException("Invalid car ID format. Must be a 24-character hex string.");
+        }
         var rentalToAdd = toRental(rentalStartRequestDto);
         rentalRepository.persist(rentalToAdd);
     }
@@ -65,8 +72,11 @@ public class RentalService {
     }
 
     public void finishRental(String id) {
+        if (!isValidObjectId(id)) {
+            throw new IllegalArgumentException("Invalid rental ID format. Must be a 24-character hex string.");
+        }
         var rental = rentalRepository.findByIdOptional(new ObjectId(id))
-                .orElseThrow(()-> new RuntimeException("Rental not founded"));
+                .orElseThrow(() -> new RuntimeException("Rental not found"));
 
         rental.setFinish(LocalDateTime.now());
         invoiceService.process(rental);
