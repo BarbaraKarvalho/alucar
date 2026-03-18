@@ -2,6 +2,7 @@ package com.barbara.alucar.domain.entity;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import jakarta.validation.Valid;
 
 @MongoEntity(collection = "cars")
 public class Car extends PanacheMongoEntity {

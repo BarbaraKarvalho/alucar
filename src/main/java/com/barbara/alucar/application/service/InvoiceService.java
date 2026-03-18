@@ -34,6 +34,7 @@ public class InvoiceService {
     public void process(Rental rental) {
     //TODO: Até 12 hrs - cobrar por hora / + de 12hrs cobrar diária
         //FIXME: Considerar tbm o valor da diária
+
         Duration duration = Duration.between(rental.getStart(), rental.getFinish()); //is object = variable of class
         int hoursDuration = (int) Math.ceil(duration.toMinutes()/HOUR_TO_MINUTES);
         int daysDuration = (int) Math.ceil(duration.toHours()/DAY_TO_HOURS);
