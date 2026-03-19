@@ -27,4 +27,18 @@ class UserServiceTest {
         String details = userService.getUserDetails("john@example.com");
         assertTrue(details.contains("john@example.com"));
     }
+<<<<<<< Updated upstream
+=======
+
+    @Test
+    void testUpdateUser() {
+        assertDoesNotThrow(() -> userService.updateUser("john@example.com", "John Smith"));
+    }
+    
+    @test
+    void testDeleteUser() {
+        assertDoesNotThrow(() -> userService.deleteUser(""));
+    }
+    
+>>>>>>> Stashed changes
 }
