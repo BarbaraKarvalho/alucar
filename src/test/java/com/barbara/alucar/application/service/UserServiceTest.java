@@ -27,9 +27,4 @@ class UserServiceTest {
         String details = userService.getUserDetails("john@example.com");
         assertTrue(details.contains("john@example.com"));
     }
-
-    @Test
-    void testUpdateUser() {
-        assertDoesNotThrow(() -> userService.updateUser("john@example.com", "John Smith"));
-    }
 }

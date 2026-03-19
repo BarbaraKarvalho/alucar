@@ -8,6 +8,7 @@ import com.barbara.alucar.presentation.dto.RentalResponseDto;
 import com.barbara.alucar.presentation.dto.RentalStartRequestDto;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,9 +47,11 @@ class RentalServiceTest {
     }
 
     @Nested
+    @DisplayName("Start Rental Tests")
     class StartRental {
 
         @Test
+        @DisplayName("Should persist rental with correct fields")
         void shouldPersistRentalWithCorrectFields() {
             RentalStartRequestDto dto = new RentalStartRequestDto(VALID_OBJECT_ID, "John Doe", "john@example.com");
 
@@ -67,6 +70,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should set start time close to now")
         void shouldSetStartTimeCloseToNow() {
             RentalStartRequestDto dto = new RentalStartRequestDto(VALID_OBJECT_ID, "Jane", "jane@example.com");
             LocalDateTime before = LocalDateTime.now();
@@ -83,6 +87,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for null car ID")
         void shouldThrowExceptionForNullCarId() {
             RentalStartRequestDto dto = new RentalStartRequestDto(null, "John", "john@example.com");
 
@@ -93,6 +98,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for short car ID")
         void shouldThrowExceptionForShortCarId() {
             RentalStartRequestDto dto = new RentalStartRequestDto("abc123", "John", "john@example.com");
 
@@ -101,6 +107,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for non-hex car ID")
         void shouldThrowExceptionForNonHexCarId() {
             RentalStartRequestDto dto = new RentalStartRequestDto("zzzzzzzzzzzzzzzzzzzzzzzz", "John", "john@example.com");
 
@@ -109,6 +116,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for empty car ID")
         void shouldThrowExceptionForEmptyCarId() {
             RentalStartRequestDto dto = new RentalStartRequestDto("", "John", "john@example.com");
 
@@ -117,6 +125,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should accept uppercase hex car ID")
         void shouldAcceptUppercaseHexCarId() {
             RentalStartRequestDto dto = new RentalStartRequestDto("507F1F77BCF86CD799439011", "John", "john@example.com");
 
@@ -124,12 +133,47 @@ class RentalServiceTest {
 
             verify(rentalRepository, times(1)).persist(any(Rental.class));
         }
+
+        @Test
+        @DisplayName("Should throw exception for invalid email format")
+        void shouldThrowExceptionForInvalidEmailFormat() {
+            RentalStartRequestDto dto = new RentalStartRequestDto(VALID_OBJECT_ID, "John", "invalid-email");
+
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                    () -> rentalService.startRental(dto));
+            assertTrue(ex.getMessage().contains("Invalid email format"));
+            verify(rentalRepository, never()).persist(any(Rental.class));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for null user name")
+        void shouldThrowExceptionForNullUserName() {
+            RentalStartRequestDto dto = new RentalStartRequestDto(VALID_OBJECT_ID, null, "john@example.com");
+
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                    () -> rentalService.startRental(dto));
+            assertTrue(ex.getMessage().contains("User name cannot be null"));
+            verify(rentalRepository, never()).persist(any(Rental.class));
+        }
+
+        @Test
+        @DisplayName("Should throw exception for empty user name")
+        void shouldThrowExceptionForEmptyUserName() {
+            RentalStartRequestDto dto = new RentalStartRequestDto(VALID_OBJECT_ID, "", "john@example.com");
+
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                    () -> rentalService.startRental(dto));
+            assertTrue(ex.getMessage().contains("User name cannot be empty"));
+            verify(rentalRepository, never()).persist(any(Rental.class));
+        }
     }
 
     @Nested
+    @DisplayName("Finish Rental Tests")
     class FinishRental {
 
         @Test
+        @DisplayName("Should set finish time and process invoice")
         void shouldSetFinishTimeAndProcessInvoice() {
             Rental rental = new Rental();
             rental.setStart(LocalDateTime.now().minusHours(3));
@@ -143,6 +187,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should set finish time close to now")
         void shouldSetFinishTimeCloseToNow() {
             Rental rental = new Rental();
             rental.setStart(LocalDateTime.now().minusHours(1));
@@ -158,6 +203,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception when rental not found")
         void shouldThrowExceptionWhenRentalNotFound() {
             when(rentalRepository.findByIdOptional(new ObjectId(VALID_OBJECT_ID_2)))
                     .thenReturn(Optional.empty());
@@ -169,6 +215,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for invalid rental ID")
         void shouldThrowExceptionForInvalidRentalId() {
             assertThrows(IllegalArgumentException.class,
                     () -> rentalService.finishRental("invalid-id"));
@@ -177,6 +224,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for null rental ID")
         void shouldThrowExceptionForNullRentalId() {
             assertThrows(IllegalArgumentException.class,
                     () -> rentalService.finishRental(null));
@@ -184,6 +232,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should throw exception for empty rental ID")
         void shouldThrowExceptionForEmptyRentalId() {
             assertThrows(IllegalArgumentException.class,
                     () -> rentalService.finishRental(""));
@@ -191,6 +240,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should pass same rental instance to invoice service")
         void shouldPassSameRentalInstanceToInvoiceService() {
             Rental rental = new Rental();
             rental.setStart(LocalDateTime.now().minusHours(5));
@@ -209,6 +259,7 @@ class RentalServiceTest {
     class FindAll {
 
         @Test
+        @DisplayName("Should return empty list when no rentals")
         void shouldReturnEmptyListWhenNoRentals() {
             when(rentalRepository.listAll()).thenReturn(Collections.emptyList());
 
@@ -218,6 +269,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should map rental fields to response DTO")
         void shouldMapRentalFieldsToResponseDto() {
             ObjectId rentalId = new ObjectId(VALID_OBJECT_ID);
             ObjectId carId = new ObjectId(VALID_OBJECT_ID_2);
@@ -254,6 +306,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should map multiple rentals")
         void shouldMapMultipleRentals() {
             ObjectId carId = new ObjectId(VALID_OBJECT_ID_2);
 
@@ -284,6 +337,7 @@ class RentalServiceTest {
         }
 
         @Test
+        @DisplayName("Should return null finish for active rental")
         void shouldReturnNullFinishForActiveRental() {
             ObjectId carId = new ObjectId(VALID_OBJECT_ID_2);
 
